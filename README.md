@@ -8,7 +8,7 @@ This repository provides a ready-to-run setup for **Google Colab and Kaggle**, i
 
 ### Google Colab
 
-[**Open in Google Colab**](YOUR_COLAB_LINK_HERE)
+[**Open in Google Colab**](https://colab.research.google.com/drive/1IzTmlOrm36stLhIVFBvqlys5O2ou9rMc?usp=sharing)
 
 ### Kaggle
 
