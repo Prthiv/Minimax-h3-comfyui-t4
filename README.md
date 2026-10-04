@@ -1,147 +1,104 @@
-# MiniMax H3 on a 14–15 GB NVIDIA T4 with ComfyUI
+# MiniMax H3 — ComfyUI on NVIDIA T4
 
-Run **MiniMax H3 text-to-video with native audio** in **ComfyUI on a single NVIDIA Tesla T4 (14–15 GB VRAM)** using a low-VRAM workflow.
+Run **MiniMax H3 text-to-video with native audio** in ComfyUI on a single NVIDIA Tesla T4 GPU using a low-VRAM workflow.
 
-This repository provides a ready-to-run **Google Colab / Kaggle notebook** that installs ComfyUI, adds the required H3 low-VRAM nodes, downloads the required model files, patches the H3 ClipProj workflow for a T4, launches ComfyUI, and exposes it through a Cloudflare Quick Tunnel.
+This repository provides a ready-to-run setup for **Google Colab and Kaggle**, including the ComfyUI workflow, model setup, low-VRAM configuration, and Cloudflare Quick Tunnel for remote access.
 
-> **Hardware target:** NVIDIA Tesla T4, ~14–15 GB VRAM  
-> **Tested configuration in the notebook:** PyTorch 2.11.0+cu130, CUDA 13.0, ComfyUI 0.38.0, Tesla T4  
-> **First test:** 384×224, 22 frames, 6 steps (~0.92 s at 24 FPS)
+## Quick Start
 
-## ✨ What this project does
+### Google Colab
 
-The notebook is designed around the **ComfyUI MiniMax H3 workflow**, not standalone DiffSynth.
+[**Open in Google Colab**](YOUR_COLAB_LINK_HERE)
 
-It uses:
+### Kaggle
 
-- **MiniMax H3** diffusion model
-- **Qwen3-VL 4B FP8** text encoder through ClipProj
-- **MiniMax H3 ClipProj** projection
-- **MiniMax H3 LowVRAM** node
+[**Open in Kaggle**](https://www.kaggle.com/code/parthivsm/minmax-h3-comfyui)
+
+> **Recommended:** Use a Tesla T4 GPU. The notebook is specifically tuned for approximately 14–15 GB of VRAM.
+
+---
+
+## What is this?
+
+This project makes it possible to run the **MiniMax H3 video generation workflow** through ComfyUI on hardware with limited VRAM.
+
+The workflow uses:
+
+- MiniMax H3 diffusion model
+- Qwen3-VL 4B FP8 text encoder
+- MiniMax H3 ClipProj
+- MiniMax H3 LowVRAM optimization
 - H3 video VAE
 - H3 audio VAE
-- ComfyUI workflow with video + audio output
-- `--lowvram` and FP16 VAE settings for T4-class GPUs
-- Cloudflare Quick Tunnel for browser access from a hosted notebook
+- ComfyUI
+- Cloudflare Quick Tunnel
 
-The notebook's ClipProj route avoids the much larger H3 32B text encoder and is intended for a single tight GPU.
+The ClipProj workflow uses a smaller Qwen3-VL 4B text encoder instead of the much larger original H3 text encoder, making the setup considerably more suitable for a T4-class GPU.
 
-## 📁 Repository
+---
 
-```text
-.
-├── MiniMax_H3_ComfyUI_T4.ipynb
-└── README.md
-```
+## Hardware
 
-## 🚀 Google Colab setup
+| Component | Recommended |
+|---|---|
+| GPU | NVIDIA Tesla T4 |
+| VRAM | ~14–15 GB |
+| Platform | Google Colab / Kaggle |
+| CUDA | 13.0 |
+| PyTorch | 2.11.0+cu130 |
+| ComfyUI | 0.38.0 |
+| Storage | ~45 GB+ |
 
-### 1. Open the notebook
+The workflow was developed and tested around a **Tesla T4 with 14.56 GB VRAM**.
 
-Upload/open:
+---
 
-`MiniMax_H3_ComfyUI_T4.ipynb`
+## Model Storage
 
-in Google Colab.
+The required model files are downloaded automatically from their upstream sources.
 
-### 2. Enable a GPU
+Approximate storage requirements:
 
-In Colab:
+| Component | Size |
+|---|---:|
+| Qwen3-VL 4B FP8 text encoder | ~5.2 GB |
+| H3 diffusion checkpoint | ~34 GB |
+| H3 video VAE | ~5.2 GB |
+| H3 audio VAE | ~0.6 GB |
+| **Total** | **~45 GB+** |
 
-**Runtime → Change runtime type → T4 GPU**
+Make sure your runtime has enough disk space before starting.
 
-Then reconnect/restart the runtime if necessary.
+Model weights are **not redistributed in this repository**. The notebook downloads the required files from their respective upstream sources.
 
-The first notebook cell checks:
+---
 
-- CUDA availability
-- GPU name
-- VRAM
+## First Generation
 
-The notebook is specifically tuned for a **Tesla T4**.
-
-### 3. Run the cells in order
-
-Run the notebook from top to bottom.
-
-The main stages are:
-
-1. GPU check
-2. Install ComfyUI
-3. Install:
-   - `ComfyUI-ClipProj`
-   - `ComfyUI-MiniMaxH3-LowVRAM`
-   - `ComfyUI-Spectrum-MiniMax-H3`
-4. Download H3 model files
-5. Fix/normalize the downloaded model paths
-6. Download and patch the H3 ClipProj workflow
-7. Start ComfyUI on port `8188`
-8. Verify the local ComfyUI server
-9. Create a Cloudflare Quick Tunnel
-10. Open the generated public URL
-
-### 4. Open ComfyUI
-
-The tunnel cell prints something similar to:
-
-```text
-🔥 NEW COMFYUI URL
-https://xxxxx.trycloudflare.com
-```
-
-Open that URL in your browser.
-
-### 5. Load the workflow
-
-Inside ComfyUI, load:
-
-```text
-/content/ComfyUI/workflow_minimax_h3_t4.json
-```
-
-You can drag the JSON workflow into the ComfyUI canvas.
-
-Then click:
-
-**Queue Prompt**
-
-The generated video is saved under:
-
-```text
-/content/ComfyUI/output/video/
-```
-
-## 🎬 First generation settings
-
-The notebook starts conservatively:
+The notebook starts with a conservative configuration designed to make the first generation easier on a T4:
 
 ```text
 Resolution: 384 × 224
 Frames:     22
 Steps:      6
 FPS:        24
-Seed:       42
 ```
 
-22 frames is approximately **0.92 seconds** at 24 FPS.
+22 frames produces approximately **0.92 seconds** of video at 24 FPS.
 
-After a successful test, the notebook recommends trying:
+Once the workflow is working, you can increase the number of frames.
+
+### H3 Frame Grid
+
+MiniMax H3 uses the following frame pattern:
 
 ```text
-384 × 224
-73 frames
-6 steps
+17n + 5
 ```
 
-Do **not** immediately jump to large resolutions and long videos on a 14–15 GB T4.
+At 24 FPS:
 
-## 🧠 H3 frame rule
-
-The workflow uses the H3 `17n + 5` frame pattern.
-
-Examples:
-
-| Frames | Approx. duration @ 24 FPS |
+| Frames | Approx. Duration |
 |---:|---:|
 | 22 | 0.92 s |
 | 39 | 1.63 s |
@@ -151,266 +108,246 @@ Examples:
 | 107 | 4.46 s |
 | 124 | 5.17 s |
 
-## 📦 Model storage requirements
+Longer generations require significantly more compute and may require additional optimization depending on the GPU/runtime.
 
-The current notebook downloads approximately:
+---
 
-| Component | Approx. size |
-|---|---:|
-| Qwen3-VL 4B FP8 text encoder | 5.2 GB |
-| H3 ClipProj | 0.5 GB |
-| H3 int8 ConvRot diffusion model | 34 GB |
-| H3 video VAE | 5.2 GB |
-| H3 audio VAE | 0.6 GB |
-| **Total** | **~45.5 GB** |
+## Google Colab
 
-The exact download size can change as upstream model repositories are updated.
-
-### ⚠️ Important hosted-notebook storage warning
-
-The **34 GB diffusion checkpoint is the major constraint**.
-
-Your runtime must have enough disk space for the complete model set plus ComfyUI and temporary files.
-
-If a hosted runtime does not provide enough persistent/ephemeral disk, the notebook can fail during model download even if the GPU has enough VRAM.
-
-## ☁️ Kaggle setup
-
-### 1. Create a Kaggle Notebook
-
-Create a new Kaggle Notebook and upload:
+1. Open the Colab notebook.
+2. Select:
 
 ```text
-MiniMax_H3_ComfyUI_T4.ipynb
+Runtime → Change runtime type
 ```
 
-### 2. Enable GPU
+3. Select a **T4 GPU**.
+4. Reconnect the runtime.
+5. Run the notebook from the beginning.
+6. Wait for the model downloads and ComfyUI setup to complete.
+7. The notebook starts ComfyUI and creates a Cloudflare Quick Tunnel.
+8. Open the generated `trycloudflare.com` URL.
 
-In Kaggle Notebook settings:
+The notebook launches ComfyUI using low-VRAM settings suitable for the T4.
 
-**Accelerator → GPU**
+---
 
-Use a **Tesla T4** if available.
+## Kaggle
 
-This workflow is designed around a **single ~14–15 GB T4**, not by combining two GPUs.
+You can run the notebook directly on Kaggle:
 
-### 3. Enable Internet
+**[Open the MiniMax H3 Kaggle Notebook](https://www.kaggle.com/code/parthivsm/minmax-h3-comfyui)**
 
-Kaggle Notebook:
+Before running:
 
-**Settings → Internet → On**
+1. Open the notebook.
+2. Enable a GPU accelerator.
+3. Enable Internet access.
+4. Make sure the runtime has enough storage for the model downloads.
+5. Run the notebook from the beginning.
 
-The notebook needs internet access to clone GitHub repositories and download the model files.
+> Kaggle storage and GPU availability can change. If the runtime does not provide enough disk space for the required model files, the notebook may fail during model download.
 
-### 4. Run the notebook
+---
 
-Run the cells in order.
+## ComfyUI Workflow
 
-The same workflow is used:
+The workflow includes the main components required for MiniMax H3 generation:
 
 ```text
-GPU
- ↓
-ComfyUI
- ↓
-H3 custom nodes
- ↓
-H3 model downloads
- ↓
-Workflow patch
- ↓
-ComfyUI server
- ↓
-Cloudflare Tunnel
- ↓
-Browser
-```
-
-### ⚠️ Kaggle storage
-
-Before starting a full model download, check the available disk space:
-
-```bash
-!df -h /content
-```
-
-or:
-
-```bash
-!df -h
-```
-
-The complete H3 setup needs roughly **45+ GB** for the model files alone.
-
-Kaggle's available notebook storage can vary by runtime/account/environment. If the available disk is below the required space, use a storage approach that provides enough capacity or use Colab/a runtime with sufficient disk.
-
-## 🔧 Useful commands
-
-Check GPU:
-
-```bash
-!nvidia-smi
-```
-
-Check disk:
-
-```bash
-!df -h
-```
-
-Check ComfyUI:
-
-```python
-import requests
-print(requests.get("http://127.0.0.1:8188").status_code)
-```
-
-Check generated videos:
-
-```bash
-!find /content/ComfyUI/output -type f \( -iname '*.mp4' -o -iname '*.webm' \) -printf '%T@ %p\n' | sort -nr | head
-```
-
-## 🛠️ How the low-VRAM setup works
-
-### ClipProj
-
-Instead of loading the much larger H3 32B text encoder, the workflow uses:
-
-```text
+Text Prompt
+     ↓
 Qwen3-VL 4B FP8
-        +
-MiniMax H3 ClipProj
+     ↓
+ClipProj
+     ↓
+MiniMax H3
+     ↓
+Video VAE + Audio VAE
+     ↓
+CreateVideo
+     ↓
+Video + Audio Output
 ```
 
-This significantly reduces the text-encoder memory requirement.
+The workflow is configured for low-VRAM execution and includes the H3 video/audio generation pipeline.
 
-### H3 LowVRAM
+---
 
-The workflow inserts the `MiniMaxH3LowVRAM` node between the diffusion model loader and the H3 sigma-shift node.
+## Low-VRAM Optimization
 
-The notebook uses:
+This setup uses the **MiniMax H3 LowVRAM** workflow to reduce peak memory usage on GPUs such as the Tesla T4.
 
-```text
-memory profile: low_vram
-chunk tokens: 4096
-```
-
-This is intended to reduce peak MLP memory usage.
-
-### ComfyUI
-
-ComfyUI is launched with:
+ComfyUI is launched with low-VRAM options including:
 
 ```bash
---lowvram
---fp16-vae
+--lowvram --fp16-vae
 ```
 
-and listens on:
+The low-VRAM optimization helps reduce memory usage during the H3 MLP computation.
 
-```text
-0.0.0.0:8188
-```
+It does not eliminate all possible out-of-memory situations. Increasing resolution, frame count, or other settings can increase VRAM requirements.
 
-## 🌐 Cloudflare Quick Tunnel
+---
 
-The notebook automatically downloads `cloudflared` and creates a temporary:
+## Cloudflare Quick Tunnel
 
-```text
-https://xxxxx.trycloudflare.com
-```
+The notebook automatically creates a temporary Cloudflare Quick Tunnel for the local ComfyUI server.
 
-URL pointing to:
+ComfyUI runs locally on:
 
 ```text
 http://127.0.0.1:8188
 ```
 
-Quick Tunnels are intended for temporary/testing use and do **not** provide a production uptime guarantee.
-
-## ❗ Troubleshooting
-
-### `No CUDA GPU is attached`
-
-Enable the GPU accelerator and restart/reconnect the runtime.
-
-### `No space left on device`
-
-The H3 model set is large. Check:
-
-```bash
-!df -h
-```
-
-The diffusion checkpoint alone is about 34 GB.
-
-### CUDA out-of-memory
-
-Start with:
+The notebook then exposes it through a temporary:
 
 ```text
-384 × 224
-22 frames
-6 steps
+https://xxxxx.trycloudflare.com
 ```
 
-Do not immediately increase resolution, frame count, or other memory-heavy settings.
-
-### ComfyUI URL is not accessible
-
-Check the local server first:
-
-```python
-import requests
-print(requests.get("http://127.0.0.1:8188", timeout=10).status_code)
-```
-
-Then rerun the Cloudflare Tunnel cell.
-
-### Workflow cannot find a model
-
-The notebook includes a path-normalization step because Hugging Face downloads can create nested directories.
-
-Run the model verification cell and make sure the required files exist under:
-
-```text
-/content/ComfyUI/models/
-```
-
-## ⚖️ Model and third-party components
-
-This repository contains the notebook/workflow setup and installation instructions. It does **not** redistribute the large MiniMax H3 model weights.
-
-The notebook downloads model files from their respective upstream Hugging Face repositories.
-
-You are responsible for complying with the licenses and terms of:
-
-- MiniMax H3
-- ComfyUI
-- ComfyUI-ClipProj
-- ComfyUI-MiniMaxH3-LowVRAM
-- ComfyUI-Spectrum-MiniMax-H3
-- Qwen3-VL
-- Cloudflare `cloudflared`
-
-## 🔗 Upstream projects
-
-- [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
-- [ComfyUI-ClipProj](https://github.com/nicolab28/ComfyUI-ClipProj)
-- [ComfyUI-MiniMaxH3-LowVRAM](https://github.com/lericogit/ComfyUI-MiniMaxH3-LowVRAM)
-- [ComfyUI-Spectrum-MiniMax-H3](https://github.com/xmarre/ComfyUI-Spectrum-MiniMax-H3)
-
-## 🔎 SEO / GitHub keywords
-
-`MiniMax H3`, `MiniMax H3 ComfyUI`, `MiniMax H3 T4`, `MiniMax H3 14GB VRAM`, `MiniMax H3 15GB VRAM`, `MiniMax H3 Colab`, `MiniMax H3 Kaggle`, `ComfyUI T4`, `ComfyUI low VRAM`, `text to video`, `AI video generation`, `video generation with audio`, `Qwen3-VL`, `ClipProj`, `Tesla T4`, `Google Colab AI video`, `Kaggle AI video`, `open source video generation`
-
-## ⭐ Star the repo
-
-If this notebook helps you run MiniMax H3 on a low-VRAM T4, consider starring the repository and sharing your results.
+This allows you to access the ComfyUI interface from your browser without manually configuring port forwarding.
 
 ---
 
-### Disclaimer
+## Project Structure
 
-This notebook is an experimental community setup for running MiniMax H3 through ComfyUI on constrained GPU hardware. Upstream repositories, model files, APIs, hosted notebook environments, and download paths can change over time.
+```text
+MiniMax-H3-ComfyUI-T4/
+│
+├── MiniMax_H3_ComfyUI_T4.ipynb
+├── README.md
+└── .gitignore
+```
+
+The notebook handles the majority of the installation and configuration automatically.
+
+---
+
+## Troubleshooting
+
+### CUDA GPU not detected
+
+Make sure the runtime has a GPU enabled.
+
+For Google Colab:
+
+```text
+Runtime → Change runtime type → T4 GPU
+```
+
+For Kaggle, enable the GPU accelerator in the notebook settings.
+
+---
+
+### Out of memory
+
+Try:
+
+- Lowering the resolution
+- Reducing the number of frames
+- Keeping the low-VRAM configuration enabled
+- Starting with the default 384×224 / 22-frame configuration
+
+Get the first generation working before increasing the workload.
+
+---
+
+### Insufficient storage
+
+The H3 model files require approximately **45 GB or more** of storage.
+
+Check available disk space before starting the model download.
+
+---
+
+### ComfyUI does not open
+
+Check that the ComfyUI server is running on:
+
+```text
+127.0.0.1:8188
+```
+
+If using the notebook's Cloudflare tunnel, wait for the `trycloudflare.com` URL to appear before opening it.
+
+---
+
+## Upstream Projects
+
+This project builds on the work of the MiniMax H3 and ComfyUI communities.
+
+Relevant components include:
+
+- [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
+- [ComfyUI-MiniMaxH3-LowVRAM](https://github.com/lericogit/ComfyUI-MiniMaxH3-LowVRAM)
+- [ComfyUI-Spectrum-MiniMax-H3](https://github.com/xmarre/ComfyUI-Spectrum-MiniMax-H3)
+
+Please refer to the upstream repositories for their respective licenses and documentation.
+
+---
+
+## Why this project?
+
+Running large video-generation models on consumer or free-tier GPUs can be difficult because of VRAM and storage requirements.
+
+This project focuses on making the MiniMax H3 workflow more accessible by combining:
+
+- Qwen3-VL 4B FP8
+- ClipProj
+- H3 LowVRAM optimization
+- ComfyUI
+- Tesla T4-class hardware
+- Google Colab
+- Kaggle
+
+The goal is a practical, reproducible setup that can be started without requiring a high-end local GPU.
+
+---
+
+## Roadmap
+
+- [x] MiniMax H3 ComfyUI workflow
+- [x] T4 low-VRAM configuration
+- [x] Qwen3-VL 4B FP8 ClipProj setup
+- [x] Google Colab setup
+- [x] Kaggle setup
+- [x] Cloudflare Quick Tunnel
+- [ ] Additional GPU-specific configurations
+- [ ] More example workflows
+- [ ] Additional optimization experiments
+- [ ] Longer-generation presets
+
+---
+
+## Contributing
+
+Issues, improvements, workflow optimizations, and additional hardware configurations are welcome.
+
+If you successfully run the workflow on another GPU, consider sharing:
+
+- GPU model
+- VRAM
+- Resolution
+- Frame count
+- Steps
+- Generation time
+- Any required changes
+
+This helps build a useful hardware compatibility reference for the community.
+
+---
+
+## License
+
+This repository contains setup scripts, notebook code, and workflow configuration.
+
+The underlying models and third-party components remain subject to their respective licenses and terms.
+
+Check the upstream projects before redistributing model files or other third-party assets.
+
+---
+
+## Keywords
+
+`MiniMax H3` · `MiniMax H3 ComfyUI` · `MiniMax H3 T4` · `MiniMax H3 Colab` · `MiniMax H3 Kaggle` · `ComfyUI` · `text-to-video` · `AI video generation` · `video generation with audio` · `low VRAM` · `NVIDIA T4` · `Qwen3-VL` · `ClipProj` · `Google Colab` · `Kaggle`
