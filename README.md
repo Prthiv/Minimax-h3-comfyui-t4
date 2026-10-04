@@ -64,7 +64,14 @@ Example:
 Width: 384
 Height: 224
 ```
-
+| Width × Height | Use |
+|---|---|
+| **384 × 224** | ✅ Best starting point / tested |
+| **448 × 256** | Slightly higher quality |
+| **512 × 288** | Good quality |
+| **640 × 360** | 360p |
+| **768 × 432** | 432p |
+| **832 × 480** | ⚠️ Heavy for T4 |
 This is a good starting point for a T4.
 
 Higher resolution gives better detail, but requires more VRAM and takes longer.
