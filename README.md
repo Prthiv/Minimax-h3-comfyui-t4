@@ -24,7 +24,8 @@ Use:
 
 ### 3. Run the Notebook
 
-Run the cells from **top to bottom**.
+Run the cells from **top to bottom**. 
+#**NOTE IF YOU GET ERROR ON THE 1ST NODE , CHANGE THE TYPE TO "AUTO" IN THE 1ST NODE**
 
 The notebook will:
 
